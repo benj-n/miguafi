@@ -36,7 +36,7 @@ describe('Dogs page', () => {
     vi.clearAllMocks()
   })
 
-  it('creates and edits a dog with valid name', async () => {
+  it('creates a dog with valid name', async () => {
     render(
       <Providers>
         <Dogs />
@@ -52,15 +52,6 @@ describe('Dogs page', () => {
     fireEvent.click(createBtn)
 
     await waitFor(() => expect(screen.getByText(/Chien créé/)).toBeInTheDocument())
-
-    // Now click Modifier and change name
-    const editBtn = await screen.findByText('Modifier')
-    fireEvent.click(editBtn)
-    const editField = screen.getByDisplayValue('DOG21') as HTMLInputElement
-    fireEvent.change(editField, { target: { value: 'dog22' } })
-    const saveBtn = screen.getByText('Sauver')
-    fireEvent.click(saveBtn)
-    await waitFor(() => expect(screen.getByText(/Chien mis à jour/)).toBeInTheDocument())
   })
 
   it('uploads a photo with mock File and updates list', async () => {

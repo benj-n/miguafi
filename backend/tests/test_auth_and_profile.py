@@ -11,7 +11,6 @@ def register_and_login(client: TestClient, email: str, password: str) -> str:
     r = client.post("/auth/register", json={
         "email": email,
         "password": password,
-        "dog_name": "Rex",
         "location_lat": 45.5,
         "location_lng": -73.6
     })
@@ -31,9 +30,7 @@ def test_register_login_profile_flow():
     assert r.status_code == 200
     me = r.json()
     assert me["email"] == "alice@example.com"
-    assert me["dog_name"] == "Rex"
 
-    r = client.put("/users/me", json={"dog_name": "Nova"}, headers={"Authorization": f"Bearer {token}"})
+    # Update only location fields now
+    r = client.put("/users/me", json={"location_lat": 46.0}, headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 200
-    me2 = r.json()
-    assert me2["dog_name"] == "Nova"

@@ -13,7 +13,6 @@ def auth_headers(client: TestClient, email: str) -> dict[str, str]:
         json={
             "email": email,
             "password": "pass12345",
-            "dog_name": None,
             "location_lat": None,
             "location_lng": None,
         },
@@ -40,10 +39,9 @@ def test_create_list_update_delete_dog_and_photo(tmp_path):
     items = r.json()
     assert any(d["id"] == dog_id for d in items)
 
-    # Update name
+    # Update name should be rejected (immutable)
     r = client.put(f"/dogs/{dog_id}", json={"name": "BUDDY22"}, headers=headers)
-    assert r.status_code == 200
-    assert r.json()["name"] == "BUDDY22"
+    assert r.status_code == 400
 
     # Upload a photo (local storage mounted under /static/uploads)
     # Create a tiny bytes payload

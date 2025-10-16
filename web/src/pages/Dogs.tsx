@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import Navbar from '../components/Navbar'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
-import { apiDeleteVoid, apiGet, apiPost, apiPut, apiUpload, apiPostVoid } from '../services/api'
+import { apiDeleteVoid, apiGet, apiPost, apiUpload, apiPostVoid } from '../services/api'
 
 type Dog = {
   id: number
@@ -18,7 +17,7 @@ const Dogs: React.FC = () => {
   const { push } = useToast()
   const [dogs, setDogs] = useState<Dog[]>([])
   const [newName, setNewName] = useState('')
-  const [editing, setEditing] = useState<{ id: number, name: string } | null>(null)
+  // Dog names are immutable; no editing state
   const [coOwnerUserId, setCoOwnerUserId] = useState('')
 
   const load = async () => {
@@ -37,23 +36,16 @@ const Dogs: React.FC = () => {
     const created = await apiPost<Dog>(`/dogs/`, { name: newName }, token)
     push('Chien créé')
     setNewName('')
-    setDogs([created, ...dogs])
+  setDogs([created, ...dogs])
   }
 
-  const saveEdit = async () => {
-    if (!token || !editing) return
-    if (!namePattern.test(editing.name)) { push('Nom invalide'); return }
-    const updated = await apiPut<Dog>(`/dogs/${editing.id}`, { name: editing.name }, token)
-    push('Chien mis à jour')
-    setDogs(dogs.map(d => d.id === updated.id ? updated : d))
-    setEditing(null)
-  }
+  // No name editing: immutable by backend contract
 
   const removeDog = async (id: number) => {
     if (!token) return
     await apiDeleteVoid(`/dogs/${id}`, token)
     push('Chien supprimé')
-    setDogs(dogs.filter(d => d.id !== id))
+  setDogs(dogs.filter((d: Dog) => d.id !== id))
   }
 
   const addCoOwner = async (dogId: number) => {
@@ -76,19 +68,17 @@ const Dogs: React.FC = () => {
     if (!token || !file) return
     // Client-side validation: image/* mime and size limit (e.g., 5MB)
     if (!file.type.startsWith('image/')) { push('Fichier image requis'); return }
-    const maxBytes = 5 * 1024 * 1024
-    if (file.size > maxBytes) { push('Image trop volumineuse (max 5 Mo)'); return }
+  const maxBytes = 10 * 1024 * 1024
+  if (file.size > maxBytes) { push('Image trop volumineuse (max 10 Mo)'); return }
     const fd = new FormData()
     fd.append('file', file, file.name)
     const updated = await apiUpload<Dog>(`/dogs/${dogId}/photo`, fd, token)
     push('Photo mise à jour')
-    setDogs(dogs.map(d => d.id === updated.id ? updated : d))
+  setDogs(dogs.map((d: Dog) => d.id === updated.id ? updated : d))
   }
 
   return (
-    <div>
-      <Navbar />
-      <div className="container">
+    <div className="container">
         <h2>Mes chiens</h2>
 
         <div className="card" style={{ marginBottom: 16 }}>
@@ -105,7 +95,7 @@ const Dogs: React.FC = () => {
           </div>
         </div>
 
-        <div className="list">
+    <div className="list">
           {dogs.map(dog => (
             <div key={dog.id} className="list-item">
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -114,21 +104,7 @@ const Dogs: React.FC = () => {
                 ) : (
                   <div style={{ width: 64, height: 64, background: '#eee', display: 'inline-block', borderRadius: 6 }} />
                 )}
-                {editing?.id === dog.id ? (
-                  <>
-                    <input
-                      value={editing.name}
-                      onChange={e => setEditing({ id: dog.id, name: e.target.value.toUpperCase() })}
-                    />
-                    <button onClick={saveEdit}>Sauver</button>
-                    <button className="danger" onClick={() => setEditing(null)}>Annuler</button>
-                  </>
-                ) : (
-                  <>
-                    <strong>{dog.name}</strong>
-                    <button onClick={() => setEditing({ id: dog.id, name: dog.name })}>Modifier</button>
-                  </>
-                )}
+                <strong>{dog.name}</strong>
 
                 <label style={{ marginLeft: 12 }}>
                   Photo:
@@ -152,7 +128,6 @@ const Dogs: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
     </div>
   )
 }

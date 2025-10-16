@@ -44,7 +44,11 @@ class S3Storage(StorageService):
         key = f"dogs/{uuid.uuid4().hex}{ext}"
         extra_args = {'ContentType': content_type} if content_type else None
         self.s3.upload_fileobj(fileobj, self.bucket, key, ExtraArgs=extra_args or {})
-        # Return virtual-hosted-style URL if possible, else path style via endpoint
+        # Prefer public base URL if provided (for browser access)
+        public = (settings.s3_public_base_url or '').rstrip('/') if getattr(settings, 's3_public_base_url', None) else None
+        if public:
+            return f"{public}/{key}"
+        # Else, use endpoint path-style URL
         endpoint = settings.s3_endpoint_url.rstrip('/') if settings.s3_endpoint_url else None
         if endpoint and endpoint.startswith('http'):
             return f"{endpoint}/{settings.s3_bucket}/{key}"

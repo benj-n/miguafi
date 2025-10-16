@@ -11,6 +11,19 @@ node_modules/
 dist/
 build/
 
+# Vite (framework) - cache/build and local env files
+.vite/
+**/.vite/
+**/dist/
+**/node_modules/
+web/.env
+web/.env.local
+web/.env.*.local
+web/.env.*
+!web/.env.example
+web/coverage/
+web/tsconfig.tsbuildinfo
+
 # OS
 .DS_Store
 
@@ -23,4 +36,31 @@ build/
 # Editors
 .vscode/
 .idea/
+
+
+# Android / Gradle
+*.iml
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+*.log
+
+# Local SDK/NDK configuration
+android/local.properties
+
+# Gradle build cache and outputs
+.gradle/
+**/.gradle/
+android/build/
+android/app/build/
+android/.cxx/
+android/.settings/
+
+# Keystores and signing config (DO NOT COMMIT SECRETS)
+*.jks
+*.keystore
+android/signing.properties
+android/keystore/
 

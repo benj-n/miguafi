@@ -1,29 +1,29 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { apiGet, apiPut } from '../services/api'
+import MapPicker, { LatLng as LatLngT } from '../components/MapPicker'
 
 const Profile: React.FC = () => {
   const { token, logout } = useAuth()
   const [me, setMe] = useState<any>(null)
-  const [dogName, setDogName] = useState('')
-  const [lat, setLat] = useState<number | ''>('')
-  const [lng, setLng] = useState<number | ''>('')
+  const [coord, setCoord] = useState<LatLngT | null>(null)
   const [message, setMessage] = useState('')
 
   useEffect(() => {
     ;(async () => {
       const data = await apiGet<any>('/users/me', token!)
       setMe(data)
-      setDogName(data.dog_name || '')
-      setLat(data.location_lat ?? '')
-      setLng(data.location_lng ?? '')
+      if (typeof data.location_lat === 'number' && typeof data.location_lng === 'number') {
+        setCoord({ lat: data.location_lat, lng: data.location_lng })
+      } else {
+        setCoord(null)
+      }
     })()
   }, [token])
 
   async function save() {
-    const payload: any = { dog_name: dogName }
-    if (lat !== '') payload.location_lat = lat
-    if (lng !== '') payload.location_lng = lng
+  const payload: any = {}
+    if (coord) { payload.location_lat = coord.lat; payload.location_lng = coord.lng }
     const data = await apiPut<any>('/users/me', payload, token!)
     setMe(data)
     setMessage('Sauvegardé!')
@@ -35,12 +35,9 @@ const Profile: React.FC = () => {
     <div className="container">
       <h1>Mon profil</h1>
       <p>Email: {me.email}</p>
-      <label>Nom du chien</label>
-      <input value={dogName} onChange={e => setDogName(e.target.value)} />
-      <label>Latitude approx.</label>
-      <input type="number" value={lat} onChange={e => setLat(e.target.value === '' ? '' : Number(e.target.value))} />
-      <label>Longitude approx.</label>
-      <input type="number" value={lng} onChange={e => setLng(e.target.value === '' ? '' : Number(e.target.value))} />
+  <h3>Localisation</h3>
+  <p>Cliquez sur la carte pour ajuster vos coordonnées.</p>
+  <MapPicker value={coord} onChange={setCoord} />
       <div>
         <button onClick={save}>Enregistrer</button>
         <button onClick={logout} style={{ marginLeft: 8 }}>Se déconnecter</button>

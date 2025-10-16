@@ -10,19 +10,22 @@ class Token(BaseModel):
 
 class UserBase(BaseModel):
     email: EmailStr
-    dog_name: Optional[str] = None
-    dog_photo_url: Optional[str] = None
     location_lat: Optional[float] = Field(None, ge=-90, le=90)
     location_lng: Optional[float] = Field(None, ge=-180, le=180)
 
 
 class UserCreate(UserBase):
     password: str = Field(min_length=8)
+    # Optional dog name at registration time will create a Dog entity
+    dog_name: Optional[str] = Field(
+        default=None,
+        min_length=3,
+        max_length=100,
+        pattern=r"^[A-Z0-9]{1,98}[0-9]{2}$",
+    )
 
 
 class UserUpdate(BaseModel):
-    dog_name: Optional[str] = None
-    dog_photo_url: Optional[str] = None
     location_lat: Optional[float] = Field(None, ge=-90, le=90)
     location_lng: Optional[float] = Field(None, ge=-180, le=180)
 

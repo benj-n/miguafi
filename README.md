@@ -88,8 +88,8 @@ docker compose up -d --build
 Environment:
 - Copy `.env.example` to `.env` at the repo root and adjust if needed.
 - Storage:
-	- Local (default): `STORAGE_BACKEND=local` and `STORAGE_LOCAL_DIR` writable in the API container; files served at `/static/uploads/...`.
-	- S3/MinIO: set `STORAGE_BACKEND=s3` and `S3_*` vars. The compose includes a bucket bootstrap.
+	- S3/MinIO (default in docker-compose): API uses MinIO; photos return URLs like `http://localhost:9000/<bucket>/dogs/...`. Configure with `S3_PUBLIC_BASE_URL` for browser-friendly URLs.
+	- Local: set `STORAGE_BACKEND=local` to serve under `/static/uploads/...`.
 
 ## Database migrations (Alembic)
 
@@ -135,7 +135,7 @@ curl -sX POST http://localhost:8000/dogs/ \
 	-d '{"name":"REX21"}'
 ```
 
-Upload dog photo (local storage will return /static/uploads/... URL):
+Upload dog photo (S3/MinIO will return http://localhost:9000/… if S3_PUBLIC_BASE_URL is set):
 
 ```bash
 curl -sX POST http://localhost:8000/dogs/1/photo \
@@ -146,7 +146,7 @@ curl -sX POST http://localhost:8000/dogs/1/photo \
 ## Storage notes
 
 - Local storage: files saved to `STORAGE_LOCAL_DIR` and exposed at `/static/uploads/...` while the API is running.
-- S3/MinIO storage: uploads go to the configured bucket; URLs will use the endpoint if provided (e.g., `http://minio:9000/<bucket>/dogs/...`).
+- S3/MinIO storage: uploads go to the configured bucket; URLs will use `S3_PUBLIC_BASE_URL` when set (e.g., `http://localhost:9000/<bucket>/dogs/...`), else the internal endpoint.
 - The web UI enforces client-side checks: `image/*` MIME and max ~5MB. The API also checks `image/*` MIME.
 
 ## CI

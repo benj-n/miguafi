@@ -1,0 +1,7 @@
+region = "us-east-1"
+project = "miguafi"
+db_username = "miguafi"
+db_password = "change-me"
+vpc_id = "vpc-xxxxxxxx"
+public_subnets = ["subnet-aaaa", "subnet-bbbb"]
+private_subnets = ["subnet-cccc", "subnet-dddd"]

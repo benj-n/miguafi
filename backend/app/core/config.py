@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     s3_secret_key: str | None = Field(None, env="S3_SECRET_KEY")
     s3_region: str | None = Field(None, env="S3_REGION")
     s3_bucket: str | None = Field(None, env="S3_BUCKET")
+    # Optional public base URL (e.g., http://localhost:9000/<bucket>) to construct browser-friendly URLs
+    s3_public_base_url: str | None = Field(None, env="S3_PUBLIC_BASE_URL")
 
     class Config:
         env_file = ".env"

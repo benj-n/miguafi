@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+import os
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
@@ -51,8 +52,9 @@ def create_dog(payload: DogCreate, db: Session = Depends(get_db), current_user: 
 @router.put("/{dog_id}", response_model=DogOut)
 def update_dog(dog_id: int, payload: DogUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     dog = _ensure_owner(db, current_user.id, dog_id)
-    if payload.name is not None:
-        dog.name = payload.name
+    # Enforce name immutability
+    if getattr(payload, "name", None) is not None:
+        raise HTTPException(status_code=400, detail="Dog name is immutable")
     if payload.photo_url is not None:
         dog.photo_url = payload.photo_url
     db.add(dog)
@@ -80,10 +82,19 @@ def upload_dog_photo(
     dog = _ensure_owner(db, current_user.id, dog_id)
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Only image uploads are allowed")
+    try:
+        file.file.seek(0, os.SEEK_END)
+        size = file.file.tell()
+        file.file.seek(0)
+    except Exception:
+        size = 0
+    if size > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image too large (max 10MB)")
 
     storage = storage_mod.get_storage()
     # Save with original filename to preserve extension if present
-    url = storage.save(file.file, file.filename, content_type=file.content_type)
+    filename = file.filename or "upload"
+    url = storage.save(file.file, filename, content_type=file.content_type)
     dog.photo_url = url
     db.add(dog)
     db.commit()

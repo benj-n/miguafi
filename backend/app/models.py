@@ -19,9 +19,7 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    # Profile fields
-    dog_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    dog_photo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Profile fields (dogs moved to separate table with ownership links)
     # Approximate location (low-precision GPS as text for now)
     location_lat: Mapped[float | None] = mapped_column(nullable=True)
     location_lng: Mapped[float | None] = mapped_column(nullable=True)

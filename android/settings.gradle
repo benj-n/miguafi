@@ -1,0 +1,2 @@
+rootProject.name = 'Miguafi'
+include ':app'
